@@ -2,8 +2,13 @@
   "name": "vouch-bot",
   "version": "1.0.0",
   "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
   "dependencies": {
     "discord.js": "latest",
-    "express": "latest"
+    "express": "latest",
+    "dotenv": "latest"
   }
 }
+
