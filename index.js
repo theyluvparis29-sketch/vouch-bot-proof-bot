@@ -72,5 +72,6 @@ client.on(Events.InteractionCreate, async i => {
 
 client.login('MTQ4MjkyMDMxMzE1NDE3OTIyNQ.GUFz3X.trOpipvhnNDBymKtzN35DK42-GGKJCfYa_ZSH4');
 
+client.login(process.env.DISCORD_TOKEN);
 
 
