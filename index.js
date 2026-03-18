@@ -1,3 +1,9 @@
+const express = require('express');
+const app = express();
+app.get('/', (req, res) => res.send('Vouch and Proof Bots are Online!'));
+app.listen(3000, () => console.log('Server is ready!'));
+
+// ... Your Vouch Bot and Proof Bot code follows below ...
 const { Client, GatewayIntentBits, EmbedBuilder, SlashCommandBuilder, Events } = require('discord.js');
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
@@ -67,7 +73,4 @@ client.on(Events.InteractionCreate, async i => {
 client.login('MTQ4MjkyMDMxMzE1NDE3OTIyNQ.GUFz3X.trOpipvhnNDBymKtzN35DK42-GGKJCfYa_ZSH4');
 
 
-const express = require('express');
-const app = express();
-app.get('/', (req, res) => res.send('Bot is Online!'));
-app.listen(3000, () => console.log('Server is ready!'));
+
