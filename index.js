@@ -1,92 +1,98 @@
 const express = require('express');
 const app = express();
+app.get('/', (req, res) => res.send('Bot is online!'));
+app.listen(3000, () => console.log('Keep-alive server is running on port 3000'));
 
-// Keep-alive server for Render
-app.get('/', (req, res) => res.send('Vouch and Proof Bots are Online!'));
-app.listen(3000, () => console.log('✅ Web server is ready on port 3000!'));
+const { Client, GatewayIntentBits, EmbedBuilder, REST, Routes, ApplicationCommandOptionType } = require('discord.js');
 
-const { Client, GatewayIntentBits, EmbedBuilder, SlashCommandBuilder, Events } = require('discord.js');
+// --- CONFIGURATION ---
+const TOKEN = 'pMTQ4MjkyMDMxMzE1NDE3OTIyNQ.GrOMXY.YXviJJQbR5iBngcVHow3IIuEEzs6LrsMYWgjYc';
+const CLIENT_ID = '1482920313154179225'; // From Discord Dev Portal
+const GLOBAL_BANNER = 'https://cdn.discordapp.com/attachments/1483632845170675905/1483633470172430488/Screenshot_20260303-215910.jpg?ex=69bb4cd7&is=69b9fb57&hm=1aee79ae5185ca0314cec32c393ef37000a7f1fa7689223ce9ebea4e30bfe3e1&'; // Your banner image link
 
-const client = new Client({ 
-    intents: [GatewayIntentBits.Guilds] 
-});
+const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
-// Anti-crash system: logs errors instead of stopping the bot
-process.on('unhandledRejection', error => console.error('Unhandled promise rejection:', error));
-
-client.once(Events.ClientReady, async c => {
-    console.log(`✅ Ready! Logged in as ${c.user.tag}`);
-    
-    const vouch = new SlashCommandBuilder()
-        .setName('vouch')
-        .setDescription('Submit a trade vouch')
-        .addUserOption(o => o.setName('seller').setDescription('The seller').setRequired(true))
-        .addUserOption(o => o.setName('buyer').setDescription('The buyer').setRequired(true))
-        .addStringOption(o => o.setName('order').setDescription('What was bought').setRequired(true))
-        .addIntegerOption(o => o.setName('rating').setDescription('Rating 1-10').setRequired(true))
-        .addAttachmentOption(o => o.setName('proof').setDescription('Upload trade proof').setRequired(true));
-
-    const proof = new SlashCommandBuilder()
-        .setName('proof')
-        .setDescription('Show proof of payment')
-        .addUserOption(o => o.setName('seller').setDescription('The seller').setRequired(true))
-        .addAttachmentOption(o => o.setName('image').setDescription('Proof image').setRequired(true))
-        .addStringOption(o => o.setName('payment').setDescription('Payment method').setRequired(true))
-        .addIntegerOption(o => o.setName('count').setDescription('Proof count').setRequired(true));
-
-    try {
-        await client.application.commands.set([vouch, proof]);
-        console.log('✅ Slash commands registered successfully.');
-    } catch (err) {
-        console.error('❌ Failed to register commands:', err);
+// --- REGISTER SLASH COMMANDS ---
+const commands = [
+    {
+        name: 'vouch',
+        description: 'Submit a new vouch for a seller',
+        options: [
+            { name: 'seller', description: 'The user who sold the item', type: ApplicationCommandOptionType.User, required: true },
+            { name: 'buyer', description: 'The user who bought the item', type: ApplicationCommandOptionType.User, required: true },
+            { name: 'order', description: 'What was bought?', type: ApplicationCommandOptionType.String, required: true },
+            { name: 'rating', description: 'Rating (e.g. 5/5)', type: ApplicationCommandOptionType.String, required: true },
+            { name: 'proof', description: 'Upload a screenshot of the trade', type: ApplicationCommandOptionType.Attachment, required: true },
+        ]
+    },
+    {
+        name: 'proof',
+        description: 'Submit transaction proof',
+        options:
     }
-});
+];
 
-client.on(Events.InteractionCreate, async i => {
-    if (!i.isChatInputCommand()) return;
+const rest = new REST({ version: '10' }).setToken(TOKEN);
 
-    // Use deferReply to prevent "Interaction Failed" errors if Discord is slow
-    await i.deferReply().catch(err => console.error("Error deferring reply:", err));
-
+client.on('ready', async () => {
     try {
-        // Vouch Command
-        if (i.commandName === 'vouch') {
-            const s = i.options.getMember('seller');
-            const b = i.options.getUser('buyer');
-            const o = i.options.getString('order');
-            const r = i.options.getInteger('rating');
-            const p = i.options.getAttachment('proof');
-
-            const embed = new EmbedBuilder()
-                .setColor(0x2b2d31)
-                .setTitle('new vouch ♡')
-                .setDescription(`**seller :** ${s}\n**buyer :** ${b}\n**order :** ${o}\n**rating :** ${r}\n**trade proof :** [${p.name}](${p.url})`)
-                .setImage('https://i.imgur.com') // Use permanent links
-                .setThumbnail('https://i.imgur.com');
-            
-            return await i.editReply({ embeds: [embed] });
-        }
-
-        // Proof Command
-        if (i.commandName === 'proof') {
-            const s = i.options.getMember('seller');
-            const img = i.options.getAttachment('image');
-            const pay = i.options.getString('payment');
-            const count = i.options.getInteger('count');
-
-            const embed = new EmbedBuilder()
-                .setColor(0x2b2d31)
-                .setDescription(`**seller :** ${s}\n**proof :** [${img.name}](${img.url})\n**Payment :** ${pay}\n**proof count :** ${count}`)
-                .setImage('https://i.imgur.com')
-                .setThumbnail('https://i.imgur.com');
-            
-            return await i.editReply({ embeds: [embed] });
-        }
+        console.log('Started refreshing application (/) commands.');
+        await rest.put(Routes.applicationCommands(CLIENT_ID), { body: commands });
+        console.log(`✅ Logged in as ${client.user.tag} and registered slash commands!`);
     } catch (error) {
-        console.error('Execution error:', error);
-        await i.editReply({ content: 'There was an error while executing this command!', ephemeral: true });
+        console.error(error);
     }
 });
 
-// Use Environment Variables for security
-client.login(process.env.TOKEN);
+// --- HANDLE INTERACTIONS ---
+client.on('interactionCreate', async interaction => {
+    if (!interaction.isChatInputCommand()) return;
+
+    if (interaction.commandName === 'vouch') {
+        const seller = interaction.options.getUser('seller');
+        const buyer = interaction.options.getUser('buyer');
+        const order = interaction.options.getString('order');
+        const rating = interaction.options.getString('rating');
+        const proof = interaction.options.getAttachment('proof');
+
+        const vouchEmbed = new EmbedBuilder()
+            .setColor('#7c0a02') 
+            .setTitle('🗼 new vouch')
+            .setThumbnail(buyer.displayAvatarURL({ dynamic: true }))
+            .setDescription(
+                `承 **seller** : ${seller}\n` +
+                `承 **buyer** : ${buyer}\n` +
+                `承 **order** : ${order}\n` +
+                `承 **rating** : ${rating}\n` +
+                `承 **trade proof** : [Click Here](${proof.url})`
+            )
+            .setImage(GLOBAL_BANNER)
+            .setTimestamp()
+            .setFooter({ text: `Vouch Logged`, iconURL: client.user.displayAvatarURL() });
+
+        await interaction.reply({ embeds: [vouchEmbed] });
+    }
+
+    if (interaction.commandName === 'proof') {
+        const seller = interaction.options.getUser('seller');
+        const payment = interaction.options.getString('payment');
+        const count = interaction.options.getString('count');
+        const proof = interaction.options.getAttachment('image');
+
+        const proofEmbed = new EmbedBuilder()
+            .setColor('#7c0a02')
+            .setTitle('🗼 new proof')
+            .setThumbnail(seller.displayAvatarURL({ dynamic: true }))
+            .setDescription(
+                `承 **seller** : ${seller}\n` +
+                `承 **proof link** : [Click Here](${proof.url})\n` +
+                `承 **Payment** : ${payment}\n` +
+                `承 **proof count** : ${count}`
+            )
+            .setImage(proof.url)
+            .setTimestamp()
+            .setFooter({ text: `Proof Logged`, iconURL: client.user.displayAvatarURL() });
+
+        await interaction.reply({ embeds: [proofEmbed] });
+    }
+});
