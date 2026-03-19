@@ -95,4 +95,3 @@ client.on('interactionCreate', async interaction => {
 
         await interaction.reply({ embeds: [proofEmbed] });
     }
-});
