@@ -2,12 +2,13 @@
   "name": "vouch-bot",
   "version": "1.0.0",
   "main": "index.js",
-  "dependencies": {
-    "discord.js": "^14.14.1",
-    "express": "^4.18.2",
-    "sqlite3": "^6.0.1"
-  },
   "scripts": {
     "start": "node index.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^9.4.3",
+    "discord.js": "^14.14.1",
+    "express": "^4.18.2"
   }
 }
+
