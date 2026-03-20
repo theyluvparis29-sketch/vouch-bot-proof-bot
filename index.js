@@ -11,13 +11,13 @@ const db = new Database('vouchers.db');
 db.prepare("CREATE TABLE IF NOT EXISTS vouches (user_id TEXT PRIMARY KEY, count INTEGER DEFAULT 0)").run();
 
 // --- CONFIGURATION ---
-const TOKEN = 'MTQ4MjkyMDMxMzE1NDE3OTIyNQ.GYcCYK.9FwNiW5gq7tzPwteKIopTCQim6Yk_-eZNQPKxE'; // <--- PASTE YOUR TOKEN HERE
+const TOKEN = 'YOUR_BOT_TOKEN_HERE'; // <--- PASTE YOUR TOKEN INSIDE THE QUOTES
 const CLIENT_ID = '1482920313154179225'; 
 
-const VOUCH_BANNER = 'https://cdn.discordapp.com/attachments/1483632845170675905/1483633258397700216/Screenshot_20260303-214443.jpg';
-const VOUCH_THUMBNAIL = 'https://cdn.discordapp.com/attachments/1483632845170675905/1483633333635383326/Screenshot_20260303-220917.png';
-const PROOF_BANNER = 'https://cdn.discordapp.com/attachments/1483632845170675905/1483633470172430488/Screenshot_20260303-215910.jpg';
-const PROOF_THUMBNAIL = 'https://cdn.discordapp.com/attachments/1483632845170675905/1483633524606111844/Screenshot_20260303-221158.jpg';
+const VOUCH_BANNER = 'https://cdn.discordapp.com';
+const VOUCH_THUMBNAIL = 'https://cdn.discordapp.com';
+const PROOF_BANNER = 'https://cdn.discordapp.com';
+const PROOF_THUMBNAIL = 'https://cdn.discordapp.com';
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
@@ -37,10 +37,10 @@ const commands = [
         name: 'proof',
         description: 'Submit proof of a transaction',
         options: [
-            { name: 'seller', description: 'The seller involved', type: ApplicationCommandOptionType.User, required: true },
-            { name: 'image', description: 'Upload proof image', type: ApplicationCommandOptionType.Attachment, required: true },
-            { name: 'payment', description: 'Payment method used', type: ApplicationCommandOptionType.String, required: true },
-            { name: 'count', description: 'Total items or count', type: ApplicationCommandOptionType.String, required: true }
+            { name: 'seller', description: 'The user who sold the item', type: ApplicationCommandOptionType.User, required: true },
+            { name: 'image', description: 'Upload a screenshot of the proof', type: ApplicationCommandOptionType.Attachment, required: true },
+            { name: 'payment', description: 'Payment method', type: ApplicationCommandOptionType.String, required: true },
+            { name: 'count', description: 'Proof count', type: ApplicationCommandOptionType.String, required: true }
         ]
     }
 ];
@@ -49,10 +49,9 @@ const rest = new REST({ version: '10' }).setToken(TOKEN);
 
 client.on('ready', async () => {
     try {
-        console.log(`Logged in as ${client.user.tag}`);
-        // This line registers the commands so they appear in Discord
+        console.log(`Logged in as ${client.user.tag}!`);
         await rest.put(Routes.applicationCommands(CLIENT_ID), { body: commands });
-        console.log('Successfully registered slash commands.');
+        console.log('Successfully reloaded application (/) commands.');
     } catch (error) {
         console.error('Error registering commands:', error);
     }
@@ -61,12 +60,14 @@ client.on('ready', async () => {
 client.on('interactionCreate', async interaction => {
     if (!interaction.isChatInputCommand()) return;
 
+    await interaction.deferReply(); 
+
     const { commandName, options } = interaction;
 
     if (commandName === 'vouch' || commandName === 'proof') {
         const seller = options.getUser('seller');
-        
-        // Database logic
+        if (!seller) return interaction.editReply("Seller not found.");
+
         db.prepare("INSERT INTO vouches (user_id, count) VALUES (?, 1) ON CONFLICT(user_id) DO UPDATE SET count = count + 1").run(seller.id);
         const row = db.prepare("SELECT count FROM vouches WHERE user_id = ?").get(seller.id);
         const totalVouches = row ? row.count : 0;
@@ -74,6 +75,7 @@ client.on('interactionCreate', async interaction => {
         if (commandName === 'vouch') {
             const buyer = options.getUser('buyer');
             const proof = options.getAttachment('proof');
+            
             const vouchEmbed = new EmbedBuilder()
                 .setColor('#7c0a02')
                 .setTitle('🗼 new vouch')
@@ -82,12 +84,13 @@ client.on('interactionCreate', async interaction => {
                 .setImage(VOUCH_BANNER)
                 .setTimestamp()
                 .setFooter({ text: `Vouch Logged`, iconURL: client.user.displayAvatarURL() });
-            
-            await interaction.reply({ embeds: [vouchEmbed] });
+
+            await interaction.editReply({ embeds: [vouchEmbed] });
         }
 
         if (commandName === 'proof') {
             const proof = options.getAttachment('image');
+            
             const proofEmbed = new EmbedBuilder()
                 .setColor('#7c0a02')
                 .setTitle('🗼 new proof')
@@ -96,8 +99,8 @@ client.on('interactionCreate', async interaction => {
                 .setImage(PROOF_BANNER)
                 .setTimestamp()
                 .setFooter({ text: `Proof Logged`, iconURL: client.user.displayAvatarURL() });
-            
-            await interaction.reply({ embeds: [proofEmbed] });
+
+            await interaction.editReply({ embeds: [proofEmbed] });
         }
     }
 });
