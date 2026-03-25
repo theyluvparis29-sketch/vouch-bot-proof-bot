@@ -11,7 +11,7 @@ const db = new Database('vouchers.db');
 db.prepare("CREATE TABLE IF NOT EXISTS vouches (user_id TEXT PRIMARY KEY, count INTEGER DEFAULT 0)").run();
 
 // --- CONFIGURATION ---
-const TOKEN = 'YOUR_BOT_TOKEN_HERE'; // <--- PASTE YOUR TOKEN INSIDE THE QUOTES
+const TOKEN = 'MTQ4MjkyMDMxMzE1NDE3OTIyNQ.G8S_XI.6g_7B8wbiRj0gTy1FPg530lWeqxUwdJXJiEdrA`    '; // <--- PASTE YOUR TOKEN INSIDE THE QUOTES
 const CLIENT_ID = '1482920313154179225'; 
 
 const VOUCH_BANNER = 'https://cdn.discordapp.com';
@@ -77,10 +77,10 @@ client.on('interactionCreate', async interaction => {
             const proof = options.getAttachment('proof');
             
             const vouchEmbed = new EmbedBuilder()
-                .setColor('#7c0a02')
-                .setTitle('🗼 new vouch')
+                .setColor('#978382')
+                .setTitle('new vouch 丰')
                 .setThumbnail(VOUCH_THUMBNAIL)
-                .setDescription(`承 **seller** : ${seller}\n承 **buyer** : ${buyer}\n承 **order** : ${options.getString('order')}\n承 **rating** : ${options.getString('rating')}\n承 **total vouches** : ${totalVouches}\n承 **trade proof** : [Click Here](${proof.url})`)
+                .setDescription(`承 **seller** : ${seller}\n落 **buyer** : ${buyer}\n更 **order** : ${options.getString('order')}\n㤅 **rating** : ${options.getString('rating')}\n連 **total vouches** : ${totalVouches}\n紐 **trade proof** : [Click Here](${proof.url})`)
                 .setImage(VOUCH_BANNER)
                 .setTimestamp()
                 .setFooter({ text: `Vouch Logged`, iconURL: client.user.displayAvatarURL() });
@@ -92,10 +92,10 @@ client.on('interactionCreate', async interaction => {
             const proof = options.getAttachment('image');
             
             const proofEmbed = new EmbedBuilder()
-                .setColor('#7c0a02')
-                .setTitle('🗼 new proof')
+                .setColor('#978382')
+                .setTitle(' new proof ')
                 .setThumbnail(PROOF_THUMBNAIL)
-                .setDescription(`承 **seller** : ${seller}\n承 **proof link** : [Click Here](${proof.url})\n承 **Payment** : ${options.getString('payment')}\n承 **proof count** : ${options.getString('count')}\n承 **total verified** : ${totalVouches}`)
+                .setDescription(`尊 **seller** : ${seller}\n遺 **proof link** : [Click Here](${proof.url})\n單 **Payment** : ${options.getString('payment')}\n貓 **proof count** : ${options.getString('count')}\n甚 **total verified** : ${totalVouches}`)
                 .setImage(PROOF_BANNER)
                 .setTimestamp()
                 .setFooter({ text: `Proof Logged`, iconURL: client.user.displayAvatarURL() });
